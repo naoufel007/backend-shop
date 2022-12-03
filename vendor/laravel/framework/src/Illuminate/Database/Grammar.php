@@ -3,9 +3,13 @@
 namespace Illuminate\Database;
 
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Traits\Macroable;
+use RuntimeException;
 
 abstract class Grammar
 {
+    use Macroable;
+
     /**
      * The grammar table prefix.
      *
@@ -43,7 +47,7 @@ abstract class Grammar
      * Wrap a value in keyword identifiers.
      *
      * @param  \Illuminate\Database\Query\Expression|string  $value
-     * @param  bool    $prefixAlias
+     * @param  bool  $prefixAlias
      * @return string
      */
     public function wrap($value, $prefixAlias = false)
@@ -53,10 +57,17 @@ abstract class Grammar
         }
 
         // If the value being wrapped has a column alias we will need to separate out
-        // the pieces so we can wrap each of the segments of the expression on it
-        // own, and then joins them both back together with the "as" connector.
-        if (strpos(strtolower($value), ' as ') !== false) {
+        // the pieces so we can wrap each of the segments of the expression on its
+        // own, and then join these both back together using the "as" connector.
+        if (stripos($value, ' as ') !== false) {
             return $this->wrapAliasedValue($value, $prefixAlias);
+        }
+
+        // If the given value is a JSON selector we will wrap it differently than a
+        // traditional value. We will need to split this path and wrap each part
+        // wrapped, etc. Otherwise, we will simply wrap the value as a string.
+        if ($this->isJsonSelector($value)) {
+            return $this->wrapJsonSelector($value);
         }
 
         return $this->wrapSegments(explode('.', $value));
@@ -80,9 +91,7 @@ abstract class Grammar
             $segments[1] = $this->tablePrefix.$segments[1];
         }
 
-        return $this->wrap(
-            $segments[0]).' as '.$this->wrapValue($segments[1]
-        );
+        return $this->wrap($segments[0]).' as '.$this->wrapValue($segments[1]);
     }
 
     /**
@@ -116,9 +125,33 @@ abstract class Grammar
     }
 
     /**
+     * Wrap the given JSON selector.
+     *
+     * @param  string  $value
+     * @return string
+     *
+     * @throws \RuntimeException
+     */
+    protected function wrapJsonSelector($value)
+    {
+        throw new RuntimeException('This database engine does not support JSON operations.');
+    }
+
+    /**
+     * Determine if the given string is a JSON selector.
+     *
+     * @param  string  $value
+     * @return bool
+     */
+    protected function isJsonSelector($value)
+    {
+        return str_contains($value, '->');
+    }
+
+    /**
      * Convert an array of column names into a delimited string.
      *
-     * @param  array   $columns
+     * @param  array  $columns
      * @return string
      */
     public function columnize(array $columns)
@@ -129,7 +162,7 @@ abstract class Grammar
     /**
      * Create query parameter place-holders for an array.
      *
-     * @param  array   $values
+     * @param  array  $values
      * @return string
      */
     public function parameterize(array $values)
@@ -140,12 +173,27 @@ abstract class Grammar
     /**
      * Get the appropriate query parameter place-holder for a value.
      *
-     * @param  mixed   $value
+     * @param  mixed  $value
      * @return string
      */
     public function parameter($value)
     {
         return $this->isExpression($value) ? $this->getValue($value) : '?';
+    }
+
+    /**
+     * Quote the given string literal.
+     *
+     * @param  string|array  $value
+     * @return string
+     */
+    public function quoteString($value)
+    {
+        if (is_array($value)) {
+            return implode(', ', array_map([$this, __FUNCTION__], $value));
+        }
+
+        return "'$value'";
     }
 
     /**
@@ -163,7 +211,7 @@ abstract class Grammar
      * Get the value of a raw expression.
      *
      * @param  \Illuminate\Database\Query\Expression  $expression
-     * @return string
+     * @return mixed
      */
     public function getValue($expression)
     {

@@ -1,13 +1,43 @@
 <?php
 
-use Faker\Generator as Faker;
+namespace Database\Factories;
 
-$factory->define(App\Client::class, function (Faker $faker) {
-    return [
-        'nom' => $faker->name,
-        'cin' => $faker->unique()->regexify('[A-Z]{1,2}[0-9]{6}'),
-        'telephone' => $faker->phoneNumber,
-        'points' => $faker->randomNumber(3),
-        'credit' => $faker->randomNumber(3),
-    ];
-});
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Client>
+ */
+class ClientFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            'nom' => fake()->name(),
+            'cin' => fake()->unique()->regexify('[A-Z]{1,2}[0-9]{6}'),
+            'telephone' => fake()->phoneNumber(),
+            'points' => fake()->randomNumber(3),
+            'credit' => fake()->randomNumber(3),
+        ];
+    }
+
+    /*
+    /**
+     * Indicate that the model's email address should be unverified.
+     *
+     * @return static  
+    public function unverified()
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified_at' => null,
+        ]);
+    }
+    */
+}
+
+

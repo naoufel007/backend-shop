@@ -3,8 +3,9 @@
 namespace Illuminate\Foundation\Console;
 
 use Illuminate\Console\Command;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(name: 'optimize')]
 class OptimizeCommand extends Command
 {
     /**
@@ -15,11 +16,22 @@ class OptimizeCommand extends Command
     protected $name = 'optimize';
 
     /**
+     * The name of the console command.
+     *
+     * This name is used to identify the command during lazy loading.
+     *
+     * @var string|null
+     *
+     * @deprecated
+     */
+    protected static $defaultName = 'optimize';
+
+    /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Optimize the framework for better performance (deprecated)';
+    protected $description = 'Cache the framework bootstrap files';
 
     /**
      * Execute the console command.
@@ -28,20 +40,13 @@ class OptimizeCommand extends Command
      */
     public function handle()
     {
-        //
-    }
+        $this->components->info('Caching the framework bootstrap files');
 
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions()
-    {
-        return [
-            ['force', null, InputOption::VALUE_NONE, 'Force the compiled class file to be written (deprecated).'],
+        collect([
+            'config' => fn () => $this->callSilent('config:cache') == 0,
+            'routes' => fn () => $this->callSilent('route:cache') == 0,
+        ])->each(fn ($task, $description) => $this->components->task($description, $task));
 
-            ['psr', null, InputOption::VALUE_NONE, 'Do not optimize Composer dump-autoload.'],
-        ];
+        $this->newLine();
     }
 }

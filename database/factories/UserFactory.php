@@ -1,32 +1,47 @@
 <?php
 
-use Faker\Generator as Faker;
+namespace Database\Factories;
 
-/*
-|--------------------------------------------------------------------------
-| Model Factories
-|--------------------------------------------------------------------------
-|
-| This directory should contain each of the model factory definitions for
-| your application. Factories provide a convenient way to generate new
-| model instances for testing / seeding your application's database.
-|
-*/
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
-$factory->define(App\User::class, function (Faker $faker) {
-    static $password;
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\User>
+ */
+class UserFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition()
+    {
+        return [
+            'name' => fake()->name(),
+            'password' => bcrypt('test@shop'),
+            'pass' => 'test@shop',
+            'remember_token' => Str::random(10),
+            'agence_id' => fake()->numberBetween($min = 1, $max = 4),
+            'addresse' => fake()->streetAddress(),
+            'cin' => fake()->unique()->regexify('[A-Z]{1,2}[0-9]{6}'),
+            'telephone' => fake()->unique()->phoneNumber(),
+            'p_casio_achat' => fake()->numberBetween($min = 1, $max = 4),
+            'p_casio_vente' => fake()->numberBetween($min = 1, $max = 4),
+            'p_service' => fake()->numberBetween($min = 1, $max = 4),
+        ];
+    }
 
-    return [
-        'name' => $faker->name,
-        'password' => $password ?: $password = bcrypt('test@shop'),
-        'pass' => 'test@shop',
-        'remember_token' => str_random(10),
-        'agence_id' => $faker->numberBetween($min = 1, $max = 4),
-        'addresse' => $faker->streetAddress,
-        'cin' => $faker->unique()->regexify('[A-Z]{1,2}[0-9]{6}'),
-        'telephone' => $faker->unique()->phoneNumber,
-        'p_casio_achat' => $faker->numberBetween($min = 1, $max = 4),
-        'p_casio_vente' => $faker->numberBetween($min = 1, $max = 4),
-        'p_service' => $faker->numberBetween($min = 1, $max = 4),
-    ];
-});
+    /*
+    /**
+     * Indicate that the model's email address should be unverified.
+     *
+     * @return static  
+    public function unverified()
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified_at' => null,
+        ]);
+    }
+    */
+}

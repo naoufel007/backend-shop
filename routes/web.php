@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,7 +17,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-
 Route::get('/auth', function () {
     //Perform a check whether the user is authenticated or not
     //Remove the if block during production
@@ -27,4 +28,3 @@ Route::get('/auth', function () {
     }
     return Auth::user();
 });
-

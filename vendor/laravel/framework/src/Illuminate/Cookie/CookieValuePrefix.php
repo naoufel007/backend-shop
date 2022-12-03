@@ -2,8 +2,6 @@
 
 namespace Illuminate\Cookie;
 
-use Illuminate\Support\Str;
-
 class CookieValuePrefix
 {
     /**
@@ -30,21 +28,17 @@ class CookieValuePrefix
     }
 
     /**
-     * Verify the provided cookie's value.
+     * Validate a cookie value contains a valid prefix. If it does, return the cookie value with the prefix removed. Otherwise, return null.
      *
-     * @param  string  $name
-     * @param  string  $value
+     * @param  string  $cookieName
+     * @param  string  $cookieValue
      * @param  string  $key
      * @return string|null
      */
-    public static function getVerifiedValue($name, $value, $key)
+    public static function validate($cookieName, $cookieValue, $key)
     {
-        $verifiedValue = null;
+        $hasValidPrefix = str_starts_with($cookieValue, static::create($cookieName, $key));
 
-        if (Str::startsWith($value, static::create($name, $key))) {
-            $verifiedValue = static::remove($value);
-        }
-
-        return $verifiedValue;
+        return $hasValidPrefix ? static::remove($cookieValue) : null;
     }
 }

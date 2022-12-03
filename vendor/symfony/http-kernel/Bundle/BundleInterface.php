@@ -41,44 +41,23 @@ interface BundleInterface extends ContainerAwareInterface
 
     /**
      * Returns the container extension that should be implicitly loaded.
-     *
-     * @return ExtensionInterface|null The default extension or null if there is none
      */
-    public function getContainerExtension();
-
-    /**
-     * Returns the bundle name that this bundle overrides.
-     *
-     * Despite its name, this method does not imply any parent/child relationship
-     * between the bundles, just a way to extend and override an existing
-     * bundle.
-     *
-     * @return string The Bundle name it overrides or null if no parent
-     *
-     * @deprecated This method is deprecated as of 3.4 and will be removed in 4.0.
-     */
-    public function getParent();
+    public function getContainerExtension(): ?ExtensionInterface;
 
     /**
      * Returns the bundle name (the class short name).
-     *
-     * @return string The Bundle name
      */
-    public function getName();
+    public function getName(): string;
 
     /**
      * Gets the Bundle namespace.
-     *
-     * @return string The Bundle namespace
      */
-    public function getNamespace();
+    public function getNamespace(): string;
 
     /**
      * Gets the Bundle directory path.
      *
      * The path should always be returned as a Unix path (with /).
-     *
-     * @return string The Bundle absolute path
      */
-    public function getPath();
+    public function getPath(): string;
 }
